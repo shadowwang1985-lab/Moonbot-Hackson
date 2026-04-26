@@ -1,0 +1,2609 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>探月·Frontier 黑客松 · MOONBOT FRONTIER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Archivo+Black&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --hue: 22;
+    --sat: 92%;
+    --orange:      hsl(var(--hue) var(--sat) 53%);
+    --orange-deep: hsl(var(--hue) var(--sat) 40%);
+    --orange-glow: hsl(var(--hue) var(--sat) 60% / 0.25);
+    --planet-light: hsl(calc(var(--hue) + 8) 100% 73%);
+    --planet-mid:   hsl(var(--hue) var(--sat) 53%);
+    --planet-deep: hsl(calc(var(--hue) - 4) calc(var(--sat) - 10%) 38%);
+    --planet-shadow: hsl(calc(var(--hue) + 6) 60% 9%);
+    --warm:        #F5F0E8;
+    --warm-dim:    #A8A29E;
+    --warm-faint:  #57534E;
+    --black:       #080808;
+    --black-lift:  #111111;
+    --line:        #1F1D1B;
+
+    --f-display: "Bebas Neue", "Helvetica Neue", sans-serif;
+    --f-serif:   "Noto Serif SC", "Songti SC", serif;
+    --f-sans:    "Noto Sans SC", -apple-system, sans-serif;
+    --f-mono:    "Space Mono", ui-monospace, monospace;
+
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --max: 1280px;
+    --gutter: 32px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--black); color: var(--warm); }
+  body {
+    font-family: var(--f-sans);
+    font-size: 15px;
+    line-height: 1.55;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    cursor: none;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: none; }
+  img, svg { display: block; }
+  ul { list-style: none; }
+  ::selection { background: var(--orange); color: var(--black); }
+
+  *, button, input, textarea, .card, .tag, .btn { border-radius: 0 !important; }
+
+  /* ── CURSOR ── */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    will-change: transform;
+  }
+  .cursor-dot {
+    width: 10px; height: 10px;
+    background: var(--orange);
+    transform: translate(-50%, -50%);
+    border-radius: 50% !important;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(249, 115, 22, 0.5);
+    transform: translate(-50%, -50%);
+    border-radius: 50% !important;
+    transition: width .25s var(--ease), height .25s var(--ease), border-color .25s var(--ease);
+  }
+  .cursor-ring.hover {
+    width: 56px; height: 56px;
+    border-color: rgba(249, 115, 22, 0.9);
+  }
+  @media (hover: none) {
+    body { cursor: auto; }
+    .cursor-dot, .cursor-ring { display: none; }
+    button, a { cursor: pointer; }
+  }
+
+  /* ── LAYOUT ── */
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+  section.s {
+    padding: 140px 0;
+    border-top: 1px solid var(--line);
+    position: relative;
+  }
+  .s-head {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 48px;
+    margin-bottom: 80px;
+    align-items: baseline;
+  }
+  .s-num {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--warm-faint);
+    letter-spacing: 0.18em;
+  }
+  .s-title { display: flex; flex-direction: column; gap: 12px; }
+  .s-title-cn {
+    font-family: var(--f-serif);
+    font-size: 44px;
+    line-height: 1.15;
+    color: var(--warm);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .s-title-sub {
+    font-family: var(--f-serif);
+    font-size: 18px;
+    color: var(--warm-dim);
+    line-height: 1.7;
+    max-width: 60ch;
+    margin-top: 8px;
+    font-weight: 400;
+  }
+
+  /* ── NAV ── */
+  nav.top {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    background: rgba(8, 8, 8, 0.78);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.top .wrap {
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px;
+  }
+  .nav-left {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    color: var(--warm);
+    letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .nav-left .logo {
+    height: 26px; width: auto;
+    display: block;
+  }
+  .nav-left .logo-cn {
+    font-family: var(--f-serif);
+    font-size: 13px;
+    color: var(--warm-dim);
+    letter-spacing: 0.06em;
+    padding-left: 12px;
+    margin-left: 2px;
+    border-left: 1px solid var(--warm-faint);
+  }
+  .nav-mid {
+    display: flex; gap: 28px;
+    font-family: var(--f-serif);
+    font-size: 13px;
+    color: var(--warm-dim);
+  }
+  .nav-mid a:hover { color: var(--orange); }
+  .nav-right {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--warm-faint);
+    letter-spacing: 0.12em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-right .dot {
+    width: 6px; height: 6px;
+    background: var(--orange);
+    border-radius: 50% !important;
+    animation: pulse 2.4s var(--ease) infinite;
+  }
+  @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:0.3} }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    padding: 140px 0 80px;
+    display: flex; align-items: center;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    pointer-events: none; overflow: hidden;
+  }
+  .hero-bg .ghost {
+    position: absolute;
+    font-family: var(--f-display);
+    font-size: clamp(280px, 38vw, 600px);
+    line-height: 0.85;
+    color: var(--warm);
+    opacity: 0.025;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    user-select: none;
+    bottom: -8%; left: -3%;
+  }
+  .hero .wrap {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .hero-meta {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--warm-faint);
+    text-transform: uppercase;
+    margin-bottom: 36px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .hero-meta::before {
+    content: ""; width: 32px; height: 1px; background: var(--orange);
+  }
+  .hero-h1 {
+    font-family: var(--f-display);
+    font-size: clamp(72px, 9.5vw, 152px);
+    line-height: 0.9;
+    letter-spacing: 0.005em;
+    color: var(--orange);
+    margin-bottom: 0;
+    position: relative;
+  }
+  .hero-h1 .cn {
+    display: block;
+    font-family: var(--f-serif);
+    font-size: 0.32em;
+    color: var(--warm);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-top: 18px;
+    line-height: 1;
+  }
+  .hero-en-sub {
+    font-family: var(--f-display);
+    font-size: 22px;
+    color: var(--warm-dim);
+    letter-spacing: 0.06em;
+    margin-top: 28px;
+  }
+  .hero-cn-sub {
+    font-family: var(--f-serif);
+    font-size: 15px;
+    color: var(--warm-dim);
+    letter-spacing: 0.08em;
+    margin-top: 8px;
+  }
+  .hero-cn-sub .sep { color: var(--orange); margin: 0 6px; }
+
+  .hero-slogan {
+    margin-top: 56px;
+    font-family: var(--f-serif);
+    font-size: 28px;
+    line-height: 1.5;
+    color: var(--warm);
+    font-weight: 500;
+    max-width: 22ch;
+  }
+  .hero-slogan .end {
+    color: var(--orange);
+    font-weight: 700;
+    display: block;
+  }
+
+  .hero-cta {
+    margin-top: 48px;
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .hero-foot {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--warm-dim);
+    letter-spacing: 0.16em;
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+  .hero-foot .sep { color: var(--orange); }
+
+  /* ── MOON STAGE ── */
+  .moon-stage {
+    position: relative;
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 16px 26px;
+    font-family: var(--f-serif);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    transition: all .3s var(--ease);
+    border: 1px solid transparent;
+    cursor: none;
+    font-weight: 500;
+  }
+  .btn .arr { width: 14px; height: 1px; background: currentColor; position: relative; transition: all .3s var(--ease); }
+  .btn .arr::after { content: ""; position: absolute; right: 0; top: -3px; width: 7px; height: 7px; border-top: 1px solid currentColor; border-right: 1px solid currentColor; transform: rotate(45deg); }
+  .btn:hover .arr { width: 22px; }
+  .btn.primary { background: var(--orange); color: var(--black); }
+  .btn.primary:hover { background: var(--warm); }
+  .btn.secondary { border-color: var(--warm); color: var(--warm); }
+  .btn.secondary:hover { background: var(--warm); color: var(--black); }
+  .btn.tiny { padding: 10px 16px; font-size: 12px; }
+
+
+  /* legacy moon-stage already styled above; original definition remains */
+  .moon {
+    position: relative;
+    width: 78%;
+    aspect-ratio: 1;
+    border-radius: 50% !important;
+    background: radial-gradient(circle at 28% 28%, var(--planet-light) 0%, var(--planet-mid) 18%, var(--planet-deep) 55%, var(--planet-shadow) 92%);
+    box-shadow:
+      inset -40px -40px 100px rgba(0,0,0,0.65),
+      inset 30px 30px 80px rgba(255, 200, 140, 0.15),
+      0 0 140px var(--orange-glow);
+    animation: moonReveal 2.4s var(--ease) both;
+  }
+  .moon::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: 50% !important;
+    background:
+      radial-gradient(circle at 65% 70%, rgba(0,0,0,0.4) 0%, transparent 8%),
+      radial-gradient(circle at 40% 80%, rgba(0,0,0,0.35) 0%, transparent 5%),
+      radial-gradient(circle at 75% 35%, rgba(0,0,0,0.3) 0%, transparent 4%),
+      radial-gradient(circle at 30% 55%, rgba(0,0,0,0.25) 0%, transparent 3%),
+      radial-gradient(circle at 55% 25%, rgba(0,0,0,0.2) 0%, transparent 3.5%);
+    mix-blend-mode: multiply;
+    opacity: 0.9;
+  }
+  .moon::after {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: 50% !important;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+    mix-blend-mode: overlay;
+    opacity: 0.35;
+    animation: spin 240s linear infinite;
+  }
+  @keyframes moonReveal {
+    from { transform: translateY(60%); opacity: 0; }
+    to   { transform: translateY(0);   opacity: 1; }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .moon-orbit {
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(168, 162, 158, 0.10);
+    border-radius: 50% !important;
+    animation: spin 80s linear infinite;
+  }
+  .moon-orbit::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 50%;
+    width: 8px; height: 8px;
+    transform: translate(-50%, -50%);
+    background: var(--orange);
+    border-radius: 50% !important;
+  }
+  .moon-coord {
+    position: absolute;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--warm-faint);
+    letter-spacing: 0.1em;
+  }
+  .moon-coord.tl { top: 2%; left: 0; }
+  .moon-coord.tr { top: 2%; right: 0; text-align: right; }
+  .moon-coord.bl { bottom: 4%; left: 0; }
+  .moon-coord.br { bottom: 4%; right: 0; text-align: right; }
+  .moon-coord b { color: var(--warm-dim); display: block; font-weight: 400; }
+
+  /* ── PLANET (small reusable bodies) ── */
+  .planet {
+    position: relative;
+    border-radius: 50% !important;
+    box-shadow: inset -8px -8px 20px rgba(0,0,0,0.55);
+  }
+  .planet::after {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: 50% !important;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+    mix-blend-mode: overlay;
+    opacity: 0.4;
+  }
+  .planet.mercury { background: radial-gradient(circle at 32% 30%, #B8B0A6 0%, #8B8278 25%, #4F4942 65%, #1F1A15 100%); }
+  .planet.venus   { background: radial-gradient(circle at 30% 28%, #FFE4B8 0%, #F4A261 30%, #C2410C 70%, #3A1404 100%); }
+  .planet.earth   { background: radial-gradient(circle at 30% 28%, #6FA8DC 0%, #2F5F8F 35%, #0E2440 75%, #03101F 100%); }
+  .planet.mars    { background: radial-gradient(circle at 30% 28%, #E07F4F 0%, #B5421A 35%, #6B1F0A 75%, #1A0604 100%); }
+  .planet.jupiter { background: radial-gradient(circle at 30% 30%, #F8E0B8 0%, #D4A574 22%, #A06840 60%, #4A2A14 100%); }
+  .planet.jupiter::before {
+    content:""; position:absolute; inset:0; border-radius:50% !important;
+    background: linear-gradient(180deg, transparent 14%, rgba(78,38,12,0.4) 18%, transparent 24%, rgba(78,38,12,0.45) 45%, transparent 54%, rgba(78,38,12,0.35) 72%, transparent 80%);
+    mix-blend-mode: multiply;
+  }
+  .planet.saturn  { background: radial-gradient(circle at 30% 28%, #F0DAB5 0%, #C9A878 28%, #8B6840 65%, #2E1F12 100%); }
+  .planet.uranus  { background: radial-gradient(circle at 30% 28%, #B8DCE0 0%, #7FA8AE 30%, #4A8088 65%, #0E2024 100%); }
+  .planet.neptune { background: radial-gradient(circle at 30% 28%, #5A8FCF 0%, #2E5489 35%, #142849 75%, #050E1C 100%); }
+  .planet.moon    { background: radial-gradient(circle at 28% 28%, var(--planet-light) 0%, var(--planet-mid) 18%, var(--planet-deep) 55%, var(--planet-shadow) 92%); }
+
+  .planet-with-rings { position: relative; }
+  .planet-with-rings .ring {
+    position: absolute;
+    width: 150%; height: 24%;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%) rotate(-18deg);
+    border-radius: 50% !important;
+    background: radial-gradient(ellipse 50% 50% at 50% 50%,
+      transparent 38%,
+      rgba(168, 140, 100, 0.7) 44%,
+      rgba(110, 88, 60, 0.0) 49%,
+      rgba(220, 195, 150, 0.85) 54%,
+      rgba(110, 88, 60, 0.0) 60%,
+      rgba(168, 140, 100, 0.5) 64%,
+      transparent 70%);
+    pointer-events: none;
+  }
+  .planet-with-rings .ring.front { z-index: 4; clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%); }
+  .planet-with-rings .ring.back  { z-index: 1; clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%); }
+  .planet-with-rings .planet { z-index: 2; }
+
+  /* ── SECTION 02 · WHAT IS FRONTIER ── */
+  .frontier-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .frontier-mark {
+    position: relative;
+    min-height: 480px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 60px 0;
+    display: flex; flex-direction: column; justify-content: space-between;
+    overflow: hidden;
+  }
+  .frontier-mark .word {
+    font-family: var(--f-display);
+    font-size: clamp(120px, 16vw, 240px);
+    line-height: 0.85;
+    color: var(--orange);
+    letter-spacing: 0.005em;
+  }
+  .frontier-mark .planet-row {
+    display: flex; align-items: center; gap: 24px;
+    margin-top: 40px;
+  }
+  .frontier-mark .planet-row .pwrap {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .frontier-mark .planet-row .planet { width: 36px; height: 36px; }
+  .frontier-mark .planet-row .ptag {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--warm-faint);
+    text-transform: uppercase;
+  }
+  .frontier-mark .corner-mark {
+    position: absolute; top: 16px; right: 16px;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--warm-faint);
+  }
+  .frontier-text {
+    font-family: var(--f-serif);
+    font-size: 17px;
+    line-height: 1.95;
+    color: var(--warm-dim);
+  }
+  .frontier-text p { margin-bottom: 22px; }
+  .frontier-text p strong { color: var(--warm); font-weight: 600; }
+  .frontier-text p.kicker {
+    font-size: 22px;
+    line-height: 1.6;
+    color: var(--warm);
+    font-weight: 500;
+    border-left: 2px solid var(--orange);
+    padding-left: 24px;
+    margin-bottom: 32px;
+  }
+  .frontier-text .closing {
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+    font-family: var(--f-serif);
+    font-size: 24px;
+    color: var(--orange);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── SECTION 03 · STATS + TIMELINE ── */
+  .data-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 80px;
+  }
+  .data-strip > div {
+    padding: 56px 32px;
+    border-right: 1px solid var(--line);
+    position: relative;
+  }
+  .data-strip > div:last-child { border-right: 0; }
+  .data-strip .idx {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--warm-faint);
+    letter-spacing: 0.18em;
+    margin-bottom: 24px;
+  }
+  .data-strip .n {
+    font-family: var(--f-display);
+    font-size: clamp(64px, 6.5vw, 110px);
+    line-height: 0.86;
+    color: var(--warm);
+    letter-spacing: 0.005em;
+  }
+  .data-strip .n .plus, .data-strip .n .o { color: var(--orange); }
+  .data-strip .l-cn {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    color: var(--warm-dim);
+    margin-top: 16px;
+  }
+
+  .meta-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--line);
+    margin-bottom: 100px;
+  }
+  .meta-row > div {
+    padding: 32px;
+    border-right: 1px solid var(--line);
+  }
+  .meta-row > div:last-child { border-right: 0; }
+  .meta-row .k {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--warm-faint);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .meta-row .v {
+    font-family: var(--f-serif);
+    font-size: 18px;
+    color: var(--warm);
+    line-height: 1.6;
+    font-weight: 500;
+  }
+  .meta-row .v .o { color: var(--orange); }
+
+  /* timeline */
+  .tl-head {
+    font-family: var(--f-serif);
+    font-size: 24px;
+    color: var(--warm);
+    margin-bottom: 32px;
+    font-weight: 600;
+    display: flex; align-items: baseline; gap: 16px;
+  }
+  .tl-head::before {
+    content: "";
+    width: 40px; height: 1px;
+    background: var(--orange);
+    align-self: center;
+  }
+  .timeline {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 80px;
+  }
+  .day-col {
+    background: var(--black);
+    padding: 36px 32px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .day-col .day-num {
+    font-family: var(--f-display);
+    font-size: 88px;
+    line-height: 0.85;
+    color: var(--warm);
+    letter-spacing: 0.005em;
+  }
+  .day-col .day-num .o { color: var(--orange); }
+  .day-col .day-meta {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--warm-faint);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .day-col .day-title {
+    font-family: var(--f-serif);
+    font-size: 20px;
+    color: var(--warm);
+    font-weight: 600;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .day-col ul.events { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+  .day-col ul.events li {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 16px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+    font-family: var(--f-serif);
+    font-size: 14px;
+    color: var(--warm-dim);
+    line-height: 1.6;
+  }
+  .day-col ul.events li:first-child { border-top: 0; }
+  .day-col ul.events li .t {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--warm-faint);
+    letter-spacing: 0.04em;
+  }
+  .day-col ul.events li.hero-event .t { color: var(--orange); font-weight: 700; }
+  .day-col ul.events li.hero-event { color: var(--warm); font-weight: 500; }
+
+  /* moments */
+  .moments-head {
+    font-family: var(--f-serif);
+    font-size: 24px;
+    color: var(--warm);
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex; align-items: baseline; gap: 16px;
+  }
+  .moments-head::before {
+    content: ""; width: 40px; height: 1px; background: var(--orange); align-self: center;
+  }
+  .moments-sub {
+    font-family: var(--f-serif);
+    font-size: 16px;
+    color: var(--warm-dim);
+    margin-bottom: 40px;
+    max-width: 60ch;
+    margin-left: 56px;
+  }
+  .moments {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .moment {
+    background: var(--black);
+    padding: 36px 28px 32px;
+    display: flex; flex-direction: column; gap: 18px;
+    transition: background .3s var(--ease);
+  }
+  .moment:hover { background: rgba(249,115,22,0.04); }
+  .moment .top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .moment .planet { width: 44px; height: 44px; }
+  .moment .num {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--warm-faint);
+    letter-spacing: 0.16em;
+  }
+  .moment .ttl {
+    font-family: var(--f-serif);
+    font-size: 19px;
+    color: var(--warm);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .moment .ttl .o { color: var(--orange); }
+  .moment .desc {
+    font-family: var(--f-serif);
+    font-size: 13.5px;
+    color: var(--warm-dim);
+    line-height: 1.75;
+  }
+
+  /* ── SECTION 04 · TRACKS ── */
+  .track {
+    border: 1px solid var(--line);
+    padding: 56px;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 56px;
+    align-items: start;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .track-planet {
+    position: relative;
+    aspect-ratio: 1;
+  }
+  .track-planet .planet { width: 100%; height: 100%; }
+  .track-meta {
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  .track-tag {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 0.2em;
+  }
+  .track-h {
+    font-family: var(--f-serif);
+    font-size: 36px;
+    color: var(--warm);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .track-h .en {
+    font-family: var(--f-display);
+    color: var(--orange);
+    margin-left: 12px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+  .track-sub {
+    font-family: var(--f-serif);
+    font-size: 17px;
+    color: var(--warm-dim);
+    line-height: 1.7;
+  }
+  .track-stats {
+    display: flex; gap: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .track-stats > div {
+    flex: 1;
+    padding: 20px 0;
+    border-right: 1px solid var(--line);
+    padding-right: 20px;
+  }
+  .track-stats > div:not(:first-child) { padding-left: 20px; }
+  .track-stats > div:last-child { border-right: 0; }
+  .track-stats .v {
+    font-family: var(--f-display);
+    font-size: 36px;
+    line-height: 1;
+    color: var(--warm);
+  }
+  .track-stats .v .o { color: var(--orange); }
+  .track-stats .l {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--warm-faint);
+    letter-spacing: 0.16em;
+    margin-top: 8px;
+  }
+
+  /* sub-direction grid (for track A) */
+  .subdir-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-top: 24px;
+  }
+  .subdir {
+    background: var(--black);
+    padding: 28px 24px;
+    display: flex; flex-direction: column; gap: 16px;
+    min-height: 200px;
+    transition: background .3s var(--ease);
+  }
+  .subdir:hover { background: rgba(249,115,22,0.04); }
+  .subdir .top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .subdir .planet { width: 36px; height: 36px; }
+  .subdir .pid {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    color: var(--warm-faint);
+    letter-spacing: 0.18em;
+  }
+  .subdir .name {
+    font-family: var(--f-serif);
+    font-size: 18px;
+    color: var(--warm);
+    font-weight: 600;
+  }
+  .subdir .name .en {
+    font-family: var(--f-display);
+    font-size: 13px;
+    color: var(--warm-dim);
+    margin-left: 10px;
+    letter-spacing: 0.06em;
+  }
+  .subdir .tags {
+    font-family: var(--f-serif);
+    font-size: 12.5px;
+    color: var(--warm-dim);
+    line-height: 1.7;
+    margin-top: auto;
+  }
+
+  /* difficulty table */
+  .diff-table {
+    margin-top: 24px;
+    border: 1px solid var(--line);
+  }
+  .diff-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 100px;
+    align-items: center;
+    padding: 18px 24px;
+    border-top: 1px solid var(--line);
+    gap: 24px;
+  }
+  .diff-row:first-child { border-top: 0; background: var(--black-lift); }
+  .diff-row.head {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--warm-faint);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .diff-row .lvl {
+    font-family: var(--f-display);
+    font-size: 28px;
+    color: var(--orange);
+  }
+  .diff-row.head .lvl { font-family: var(--f-mono); font-size: 10px; color: var(--warm-faint); }
+  .diff-row .desc {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    color: var(--warm-dim);
+  }
+  .diff-row .w {
+    font-family: var(--f-mono);
+    font-size: 13px;
+    color: var(--warm);
+    text-align: right;
+  }
+
+  /* ── SECTION 05 · WHY MOONBOT ── */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 64px;
+  }
+  .why-cell {
+    background: var(--black);
+    padding: 36px 24px;
+  }
+  .why-cell .n {
+    font-family: var(--f-display);
+    font-size: 56px;
+    line-height: 0.9;
+    color: var(--warm);
+  }
+  .why-cell .n .o { color: var(--orange); }
+  .why-cell .l {
+    font-family: var(--f-serif);
+    font-size: 13px;
+    color: var(--warm-dim);
+    margin-top: 12px;
+  }
+
+  .why-prose {
+    font-family: var(--f-serif);
+    font-size: 18px;
+    line-height: 1.95;
+    color: var(--warm-dim);
+    max-width: 70ch;
+    margin-bottom: 80px;
+  }
+  .why-prose strong { color: var(--warm); font-weight: 600; }
+  .why-prose .end {
+    margin-top: 24px;
+    color: var(--orange);
+    font-weight: 700;
+    font-size: 22px;
+  }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .person {
+    background: var(--black);
+    padding: 32px 24px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .person .id {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--warm-faint);
+    letter-spacing: 0.16em;
+  }
+  .person .nm {
+    font-family: var(--f-serif);
+    font-size: 22px;
+    color: var(--warm);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .person .role {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 0.14em;
+  }
+  .person .bio {
+    font-family: var(--f-serif);
+    font-size: 13px;
+    color: var(--warm-dim);
+    line-height: 1.75;
+    margin-top: auto;
+  }
+
+  /* ── SECTION 06 · JUDGES ── */
+  .judges {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .judge-col {
+    background: var(--black);
+    padding: 36px 32px;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  .judge-col .top {
+    display: flex; align-items: center; gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .judge-col .top .planet { width: 40px; height: 40px; flex-shrink: 0; }
+  .judge-col .top .titles { display: flex; flex-direction: column; gap: 4px; }
+  .judge-col .top .titles .h {
+    font-family: var(--f-serif);
+    font-size: 22px;
+    color: var(--warm);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .judge-col .top .titles .c {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--warm-faint);
+    letter-spacing: 0.14em;
+  }
+  .judge-list { display: flex; flex-direction: column; }
+  .judge-item {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 12px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .judge-item:first-child { border-top: 0; }
+  .judge-item .check {
+    font-family: var(--f-mono);
+    font-size: 14px;
+    color: var(--orange);
+    line-height: 1;
+  }
+  .judge-item.pending .check { color: var(--warm-faint); content: "·"; }
+  .judge-item .nm {
+    font-family: var(--f-serif);
+    font-size: 15px;
+    color: var(--warm);
+    font-weight: 500;
+  }
+  .judge-item.pending .nm { color: var(--warm-dim); font-weight: 400; }
+  .judge-item .desc {
+    font-family: var(--f-serif);
+    font-size: 12.5px;
+    color: var(--warm-faint);
+    margin-top: 4px;
+    grid-column: 2;
+  }
+  .judge-subhead {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--orange);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-top: 12px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+  }
+  .judge-foot {
+    margin-top: 56px;
+    padding: 32px;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+    background: var(--black-lift);
+  }
+  .judge-foot .lab {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--warm-faint);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .judge-foot .ppl {
+    font-family: var(--f-serif);
+    font-size: 16px;
+    color: var(--warm);
+    font-weight: 500;
+  }
+  .judge-foot .ppl .check { color: var(--orange); margin-left: 4px; }
+  .judge-foot .sep { color: var(--warm-faint); margin: 0 14px; }
+
+  /* ── SECTION 07 · TEAMS ── */
+  .profile-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 64px;
+  }
+  .profile {
+    background: var(--black);
+    padding: 28px 20px;
+    font-family: var(--f-serif);
+    font-size: 13.5px;
+    color: var(--warm-dim);
+    line-height: 1.7;
+  }
+  .profile .idx {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--orange);
+    letter-spacing: 0.18em;
+    margin-bottom: 14px;
+  }
+
+  .team-cat {
+    border: 1px solid var(--line);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .team-cat-head {
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    align-items: center;
+    padding: 24px 32px;
+    gap: 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--black-lift);
+  }
+  .team-cat-head .num {
+    font-family: var(--f-display);
+    font-size: 32px;
+    color: var(--orange);
+    line-height: 1;
+  }
+  .team-cat-head .ttl {
+    font-family: var(--f-serif);
+    font-size: 19px;
+    color: var(--warm);
+    font-weight: 600;
+  }
+  .team-cat-head .meta {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--warm-dim);
+    letter-spacing: 0.14em;
+  }
+  .team-cat-head .meta .o { color: var(--orange); }
+
+  .team-cat-body {
+    padding: 0;
+  }
+  .team-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1.2fr 2fr 80px;
+    align-items: center;
+    padding: 18px 32px;
+    border-top: 1px solid var(--line);
+    gap: 24px;
+    transition: background .25s var(--ease);
+  }
+  .team-row:first-child { border-top: 0; }
+  .team-row:hover { background: rgba(249,115,22,0.03); }
+  .team-row .nm {
+    font-family: var(--f-serif);
+    font-size: 15px;
+    color: var(--warm);
+    font-weight: 600;
+  }
+  .team-row .who {
+    font-family: var(--f-serif);
+    font-size: 13px;
+    color: var(--warm-dim);
+  }
+  .team-row .desc {
+    font-family: var(--f-serif);
+    font-size: 13px;
+    color: var(--warm-dim);
+  }
+  .team-row .st {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--warm-faint);
+    letter-spacing: 0.14em;
+    text-align: right;
+  }
+  .team-row.confirmed .st { color: var(--orange); }
+  .team-row.confirmed .nm { color: var(--orange); }
+
+  .team-cat-prose {
+    padding: 24px 32px;
+    font-family: var(--f-serif);
+    font-size: 14px;
+    color: var(--warm-dim);
+    line-height: 1.85;
+  }
+  .team-cat-prose strong { color: var(--warm); }
+
+  .teams-foot {
+    margin-top: 32px;
+    padding: 32px;
+    border: 1px solid var(--line);
+    background: var(--black-lift);
+    font-family: var(--f-serif);
+    font-size: 14.5px;
+    color: var(--warm-dim);
+    line-height: 1.85;
+  }
+  .teams-foot strong { color: var(--orange); }
+
+  /* ── SECTION 08 · COOPERATION (CONVERSION) ── */
+  .coop-pillars {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 80px;
+  }
+  .pillar {
+    background: var(--black);
+    padding: 32px 24px;
+    display: flex; flex-direction: column; gap: 14px;
+    min-height: 180px;
+  }
+  .pillar .from {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--warm-faint);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .pillar .name {
+    font-family: var(--f-serif);
+    font-size: 22px;
+    color: var(--warm);
+    font-weight: 700;
+  }
+  .pillar .arr {
+    font-family: var(--f-mono);
+    font-size: 14px;
+    color: var(--orange);
+    margin: 4px 0;
+  }
+  .pillar .to {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    color: var(--orange);
+    line-height: 1.5;
+    font-weight: 500;
+    margin-top: auto;
+  }
+
+  .partners-section-head {
+    display: flex; align-items: baseline; gap: 16px;
+    margin-bottom: 24px;
+  }
+  .partners-section-head h3 {
+    font-family: var(--f-serif);
+    font-size: 22px;
+    color: var(--warm);
+    font-weight: 600;
+  }
+  .partners-section-head .ln {
+    flex: 1; height: 1px; background: var(--line);
+  }
+  .partners-section-head .ct {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--warm-faint);
+    letter-spacing: 0.16em;
+  }
+
+  .partners {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 56px;
+  }
+  .partner {
+    background: var(--black);
+    padding: 32px 24px;
+    display: flex; flex-direction: column; gap: 12px;
+    min-height: 180px;
+  }
+  .partner.confirmed {
+    border-top: 2px solid var(--orange);
+  }
+  .partner .stat {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--orange);
+    letter-spacing: 0.18em;
+    margin-bottom: 4px;
+  }
+  .partner.pending .stat { color: var(--warm-faint); }
+  .partner .nm {
+    font-family: var(--f-serif);
+    font-size: 19px;
+    color: var(--warm);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .partner .role {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--warm-dim);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .partner .desc {
+    font-family: var(--f-serif);
+    font-size: 13px;
+    color: var(--warm-dim);
+    line-height: 1.7;
+    margin-top: auto;
+  }
+
+  /* tier cards */
+  .tier-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .tier {
+    background: var(--black);
+    padding: 36px 28px 32px;
+    display: flex; flex-direction: column; gap: 18px;
+    transition: background .3s var(--ease);
+    position: relative;
+    min-height: 360px;
+  }
+  .tier:hover { background: rgba(249,115,22,0.04); }
+  .tier .num {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--warm-faint);
+    letter-spacing: 0.18em;
+  }
+  .tier .nm {
+    font-family: var(--f-serif);
+    font-size: 22px;
+    color: var(--warm);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-top: 4px;
+  }
+  .tier .price {
+    font-family: var(--f-display);
+    font-size: 38px;
+    line-height: 0.95;
+    color: var(--orange);
+    letter-spacing: 0.01em;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tier .price .small {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--warm-faint);
+    letter-spacing: 0.14em;
+    display: block;
+    margin-top: 8px;
+  }
+  .tier ul {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-top: auto;
+  }
+  .tier ul li {
+    font-family: var(--f-serif);
+    font-size: 13.5px;
+    color: var(--warm-dim);
+    line-height: 1.5;
+    padding-left: 18px;
+    position: relative;
+  }
+  .tier ul li::before {
+    content: ""; position: absolute;
+    left: 0; top: 9px;
+    width: 8px; height: 1px; background: var(--orange);
+  }
+
+  .conversion {
+    margin-top: 80px;
+    padding: 64px 56px;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--black) 0%, var(--black-lift) 100%);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 40px;
+    align-items: center;
+  }
+  .conversion h3 {
+    font-family: var(--f-serif);
+    font-size: 32px;
+    color: var(--warm);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+  }
+  .conversion h3 .o { color: var(--orange); }
+  .conversion .info {
+    margin-top: 16px;
+    font-family: var(--f-mono);
+    font-size: 13px;
+    color: var(--warm-dim);
+    letter-spacing: 0.06em;
+  }
+  .conversion .info span { color: var(--orange); }
+  .conversion .cta-stack { display: flex; flex-direction: column; gap: 12px; }
+
+  /* ── SECTION 09 · ABOUT MOONBOT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .about-cell {
+    background: var(--black);
+    padding: 40px 32px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .about-cell .lab {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 0.18em;
+  }
+  .about-cell .h {
+    font-family: var(--f-serif);
+    font-size: 22px;
+    color: var(--warm);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .about-cell .d {
+    font-family: var(--f-serif);
+    font-size: 15px;
+    color: var(--warm-dim);
+    line-height: 1.85;
+  }
+
+  .about-intro {
+    margin-bottom: 64px;
+    font-family: var(--f-serif);
+    font-size: 22px;
+    color: var(--warm);
+    line-height: 1.7;
+    max-width: 70ch;
+    font-weight: 500;
+  }
+  .about-intro .o { color: var(--orange); }
+
+  /* ── SECTION 10 · CLOSING ── */
+  .closing {
+    padding: 180px 0 120px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .closing-mark {
+    width: 96px; height: 96px;
+    margin: 0 auto 56px;
+    border-radius: 50% !important;
+    background: radial-gradient(circle at 28% 28%, var(--planet-light) 0%, var(--planet-mid) 18%, var(--planet-deep) 55%, var(--planet-shadow) 92%);
+    box-shadow:
+      inset -16px -16px 36px rgba(0,0,0,0.5),
+      0 0 64px var(--orange-glow);
+    position: relative;
+  }
+  .closing-mark::after {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: 50% !important;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+    mix-blend-mode: overlay;
+    opacity: 0.4;
+  }
+  .closing-brand {
+    font-family: var(--f-serif);
+    font-size: 18px;
+    color: var(--warm-dim);
+    letter-spacing: 0.16em;
+    margin-bottom: 56px;
+    font-weight: 500;
+  }
+  .closing-slogan {
+    font-family: var(--f-serif);
+    font-size: clamp(36px, 4.5vw, 56px);
+    line-height: 1.4;
+    color: var(--warm);
+    font-weight: 600;
+    max-width: 18ch;
+    margin: 0 auto;
+  }
+  .closing-slogan .end {
+    color: var(--orange);
+    font-weight: 700;
+    display: block;
+  }
+  .planet-strip {
+    margin-top: 96px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    padding: 32px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .planet-strip .planet { transition: transform .4s var(--ease); }
+  .planet-strip .planet:hover { transform: scale(1.15); }
+
+  /* footer */
+  footer {
+    padding: 64px 0 40px;
+    background: var(--black);
+  }
+  footer .wrap {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 56px;
+  }
+  footer .brand {
+    display: flex; align-items: center; gap: 14px;
+    font-family: var(--f-serif);
+    font-size: 18px;
+    color: var(--warm);
+    font-weight: 600;
+  }
+  footer .brand .logo {
+    height: 36px; width: auto;
+    display: block;
+  }
+  footer .brand .logo-cn {
+    font-family: var(--f-serif);
+    font-size: 16px;
+    color: var(--warm-dim);
+    letter-spacing: 0.06em;
+    padding-left: 14px;
+    border-left: 1px solid var(--warm-faint);
+  }
+  footer .blurb {
+    margin-top: 16px;
+    font-family: var(--f-serif);
+    font-size: 13px;
+    color: var(--warm-dim);
+    line-height: 1.8;
+    max-width: 36ch;
+  }
+  footer .col h4 {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--warm-faint);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  footer .col li {
+    padding: 6px 0;
+    font-family: var(--f-serif);
+    font-size: 13px;
+    color: var(--warm-dim);
+    cursor: none;
+    transition: color .2s var(--ease);
+  }
+  footer .col li:hover { color: var(--orange); }
+  footer .baseline {
+    border-top: 1px solid var(--line);
+    padding-top: 24px;
+    display: flex; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--warm-faint);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  /* ── REVEAL ── */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 1s var(--ease), transform 1s var(--ease); }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    .hero .wrap { grid-template-columns: 1fr; }
+    .moon-stage { max-width: 360px; margin: 0 auto; }
+    .frontier-block { grid-template-columns: 1fr; gap: 48px; }
+    .timeline { grid-template-columns: 1fr; }
+    .moments { grid-template-columns: repeat(2, 1fr); }
+    .data-strip { grid-template-columns: repeat(2, 1fr); }
+    .data-strip > div:nth-child(2) { border-right: 0; }
+    .meta-row { grid-template-columns: 1fr; }
+    .meta-row > div { border-right: 0; border-bottom: 1px solid var(--line); }
+    .subdir-grid { grid-template-columns: repeat(2, 1fr); }
+    .why-grid { grid-template-columns: repeat(2, 1fr); }
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
+    .judges { grid-template-columns: 1fr; }
+    .profile-strip { grid-template-columns: repeat(2, 1fr); }
+    .partners { grid-template-columns: repeat(2, 1fr); }
+    .tier-cards { grid-template-columns: repeat(2, 1fr); }
+    .about-grid { grid-template-columns: 1fr; }
+    .coop-pillars { grid-template-columns: repeat(2, 1fr); }
+    .conversion { grid-template-columns: 1fr; }
+    .track { grid-template-columns: 1fr; padding: 40px; gap: 36px; }
+    .track-planet { max-width: 200px; }
+    footer .wrap { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 720px) {
+    .s-head { grid-template-columns: 1fr; gap: 16px; }
+    .s-title-cn { font-size: 32px; }
+    .nav-mid { display: none; }
+    .hero-h1 { font-size: 96px; }
+    .hero-slogan { font-size: 22px; }
+    .moments { grid-template-columns: 1fr; }
+    .subdir-grid { grid-template-columns: 1fr; }
+    .why-grid { grid-template-columns: 1fr; }
+    .team-grid { grid-template-columns: 1fr; }
+    .profile-strip { grid-template-columns: 1fr; }
+    .partners { grid-template-columns: 1fr; }
+    .tier-cards { grid-template-columns: 1fr; }
+    .coop-pillars { grid-template-columns: 1fr; }
+    .team-row { grid-template-columns: 1fr; gap: 6px; padding: 16px; }
+    .team-row .st { text-align: left; }
+  }
+</style>
+<template id="__bundler_thumbnail" data-bg-color="#0A0A0A">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0A0A0A"/>
+    <circle cx="850" cy="400" r="220" fill="url(#moon-grad)"/>
+    <circle cx="850" cy="400" r="320" fill="none" stroke="#F97316" stroke-width="1" stroke-dasharray="2 6" opacity="0.5"/>
+    <text x="120" y="380" font-family="Bebas Neue, Impact, sans-serif" font-size="180" fill="#F97316" letter-spacing="2">MOONBOT</text>
+    <text x="124" y="450" font-family="serif" font-size="42" fill="#F5F0E8" letter-spacing="8">SPACE · 黑客松</text>
+    <text x="124" y="710" font-family="monospace" font-size="22" fill="#A39E96" letter-spacing="4">2026 · BEIJING · PHYSICAL AI</text>
+    <defs>
+      <radialGradient id="moon-grad" cx="35%" cy="35%">
+        <stop offset="0%" stop-color="#F5E8D4"/>
+        <stop offset="55%" stop-color="#9A8E7A"/>
+        <stop offset="100%" stop-color="#2A2520"/>
+      </radialGradient>
+    </defs>
+  </svg>
+</template>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- NAV -->
+<nav class="top">
+  <div class="wrap">
+    <div class="nav-left">
+      <img class="logo" src="assets/moonbot-logo-en.svg" alt="MOONBOT SPACE"/>
+      <span class="logo-cn">探月具身智能社区</span>
+    </div>
+    <div class="nav-mid">
+      <a href="#frontier">什么是 Frontier</a>
+      <a href="#event">赛事概览</a>
+      <a href="#tracks">两条主赛道</a>
+      <a href="#judges">评委</a>
+      <a href="#partners">合作</a>
+    </div>
+    <div class="nav-right"><span class="dot"></span>2026 官方招募</div>
+  </div>
+</nav>
+
+<!-- ╔══════════ 01 · HERO ══════════╗ -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <span class="ghost">FRONTIER</span>
+  </div>
+  <div class="wrap">
+    <div>
+      <div class="hero-meta">MOONBOT SPACE · 2026.07.04 — 06</div>
+      <h1 class="hero-h1">
+        MoonBot Space
+        <span class="cn">黑客松</span>
+      </h1>
+      <div class="hero-en-sub">THE PHYSICAL AI HACKATHON</div>
+      <div class="hero-cn-sub">
+        具身智能<span class="sep">·</span>AI 硬件<span class="sep">·</span>陪伴机器人<span class="sep">·</span>AI Agent
+      </div>
+      <div class="hero-slogan">
+        不为抵达，<br/>
+        <span class="end">只为看清那条还没画出的线。</span>
+      </div>
+      <div class="hero-cta">
+        <a class="btn primary" href="#partners"><span>申请加入</span><span class="arr"></span></a>
+        <a class="btn secondary" href="#partners"><span>战略合作</span><span class="arr"></span></a>
+      </div>
+      <div class="hero-foot">
+        <span>2026.07.04 — 06</span>
+        <span class="sep">·</span>
+        <span>北京 · 海淀</span>
+        <span class="sep">·</span>
+        <span>2.5 天</span>
+        <span class="sep">·</span>
+        <span>50 支队伍</span>
+      </div>
+    </div>
+    <div class="moon-stage">
+      <div class="moon-coord tl"><b>LAT</b>39.9042° N</div>
+      <div class="moon-coord tr"><b>LON</b>116.4074° E</div>
+      <div class="moon-coord bl"><b>ORIGIN</b>THU · 探月</div>
+      <div class="moon-coord br"><b>EVENT</b>FRONTIER</div>
+      <div class="moon-orbit"></div>
+      <div class="moon"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ╔══════════ 02 · WHAT IS FRONTIER ══════════╗ -->
+<section class="s" id="frontier">
+  <div class="wrap" style="font-size: 100px">
+    <div class="s-head reveal">
+      <div class="s-num">[ 02 / FRONTIER ]</div>
+      <div class="s-title">
+        <div class="s-title-cn">什么是 Frontier</div>
+        <div class="s-title-sub">边界 — 不是已经画好的边界，而是还没画出的那条线。</div>
+      </div>
+    </div>
+
+    <div class="frontier-block" style="font-family: &quot;Bebas Neue&quot;">
+      <div class="frontier-mark reveal" style="font-size: 100px">
+        <div class="corner-mark">— 边 / 界 —</div>
+        <div class="word" style="font-weight: 300; font-size: 160px; color: rgb(251, 250, 247); font-family: &quot;Bebas Neue&quot;">FRONTIER</div>
+        <div class="planet-row">
+          <div class="pwrap"><div class="planet mercury"></div><div class="ptag" style="font-size: 20px">MERCURY</div></div>
+          <div class="pwrap"><div class="planet venus"></div><div class="ptag">VENUS</div></div>
+          <div class="pwrap"><div class="planet earth"></div><div class="ptag">EARTH</div></div>
+          <div class="pwrap"><div class="planet mars"></div><div class="ptag">MARS</div></div>
+          <div class="pwrap"><div class="planet jupiter"></div><div class="ptag">JUPITER</div></div>
+        </div>
+      </div>
+
+      <div class="frontier-text reveal">
+        <p class="kicker">Frontier，意为边界。<br/>不是已经画好的边界，是还没画出的那条线。</p>
+
+        <p>Physical AI 正处在这样一个时刻——<strong>技术路线刚刚收敛</strong>，但产业落地还在试错；<strong>学术正在出顶会论文</strong>，但能跑通真实世界的 demo 屈指可数；<strong>资本大规模涌入</strong>，但还没人说得清下一个 30 亿估值长在哪儿。</p>
+
+        <p>不只是机器人——AI 可穿戴、陪伴机器人、AI Pin、智能家居……所有让 AI 走出屏幕、进入物理世界的方向，都正站在<strong>同一条边界上</strong>。</p>
+
+        <p>这就是 Frontier 的位置——在已知和未知的边界上。我们办这场黑客松，不是为了"做出一个产品"，是为了让顶级的人在这条边界上集中工作 <strong>48 小时</strong>，看看能跑通什么。</p>
+
+        <div class="closing">We‘re born too late to explore the earth
+Too early to travel to other galaxies
+Just in time to solve robotics
+
+</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════ 03 · EVENT ══════════╗ -->
+<section class="s" id="event">
+  <div class="wrap">
+    <div class="s-head reveal">
+      <div class="s-num">[ 03 / EVENT ]</div>
+      <div class="s-title">
+        <div class="s-title-cn">这是一场什么样的黑客松</div>
+        <div class="s-title-sub">不是大众化的开发者狂欢，<br/>而是中国 Physical AI 领域的年度闭门集会。</div>
+      </div>
+    </div>
+
+    <div class="data-strip reveal">
+      <div>
+        <div class="idx">[ 01 ]</div>
+        <div class="n">50<span class="plus">+</span></div>
+        <div class="l-cn">参赛队伍上限（严控）</div>
+      </div>
+      <div>
+        <div class="idx">[ 02 ]</div>
+        <div class="n">200</div>
+        <div class="l-cn">参赛者</div>
+      </div>
+      <div>
+        <div class="idx">[ 03 ]</div>
+        <div class="n">800</div>
+        <div class="l-cn">现场总人数（路演高峰）</div>
+      </div>
+      <div>
+        <div class="idx">[ 04 ]</div>
+        <div class="n" style="font-weight: 200; font-size: 8px">100<span class="plus">万+</span></div>
+        <div class="l-cn">线上曝光目标</div>
+      </div>
+    </div>
+
+    <div class="meta-row reveal">
+      <div>
+        <div class="k">TIME · 时间</div>
+        <div class="v">2026 年 <span class="o">7 月 4 日 — 6 日</span><br/>周六 — 周一 · 2.5 天</div>
+      </div>
+      <div>
+        <div class="k">PLACE · 地点</div>
+        <div class="v">北京 · 海淀核心地标<br/><span style="color:var(--warm-dim);font-size:14px;font-weight:400">清华系 / 中关村系 / 联盟伙伴场地</span></div>
+      </div>
+      <div>
+        <div class="k">FORM · 形式</div>
+        <div class="v">封闭式开发 + 学术评审<br/>产业路演 + 资本对接 + 半天 Party</div>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <div class="tl-head">三天流程时间轴</div>
+    </div>
+
+    <div class="timeline reveal">
+      <!-- DAY 1 -->
+      <div class="day-col">
+        <div class="day-meta">DAY 01 · 周六 · 7 月 4 日</div>
+        <div class="day-num">01<span class="o">.</span></div>
+        <div class="day-title">开幕 + 开发启动</div>
+        <ul class="events">
+          <li><span class="t">09:30</span><span>签到 / 圈层社交</span></li>
+          <li><span class="t">10:30</span><span>开幕式："月球时刻"短片 + 王明玥致辞</span></li>
+          <li><span class="t">10:50</span><span>Frontier 主题前沿分享（学术 + 产业 + 资本）</span></li>
+          <li class="hero-event"><span class="t">14:00</span><span>开发正式启动 · 48 小时倒计时</span></li>
+          <li><span class="t">19:30</span><span>安静开发 / 投资人 1v1 闭门 Office Hour</span></li>
+        </ul>
+      </div>
+      <!-- DAY 2 -->
+      <div class="day-col">
+        <div class="day-meta">DAY 02 · 周日 · 7 月 5 日</div>
+        <div class="day-num">02<span class="o">.</span></div>
+        <div class="day-title">冲刺开发</div>
+        <ul class="events">
+          <li><span class="t">00:00</span><span>通宵开发 / 24h 咖啡补给</span></li>
+          <li><span class="t">06:00</span><span>早餐 / 安全员检查</span></li>
+          <li class="hero-event"><span class="t">14:00</span><span>中期 Mentor Check-in</span></li>
+          <li><span class="t">22:00</span><span>宵夜 / 投资人闭门串门</span></li>
+          <li><span class="t">24:00</span><span>最后冲刺</span></li>
+        </ul>
+      </div>
+      <!-- DAY 3 -->
+      <div class="day-col">
+        <div class="day-meta">DAY 03 · 周一 · 7 月 6 日</div>
+        <div class="day-num">03<span class="o">.</span></div>
+        <div class="day-title">路演 + 颁奖 + Party</div>
+        <ul class="events">
+          <li class="hero-event"><span class="t">14:00</span><span>开发结束 · 48 小时计时收官</span></li>
+          <li><span class="t">14:00</span><span>封闭式三方评审（学术 + 产业 + 资本）</span></li>
+          <li><span class="t">16:00</span><span>巅峰路演 · 全网直播 · Top 12</span></li>
+          <li><span class="t">18:30</span><span>颁奖典礼 + 嘉宾总结</span></li>
+          <li class="hero-event"><span class="t">19:30</span><span>Frontier After Party · 半天聚会</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <div class="moments-head">四个仪式感时刻</div>
+      <div class="moments-sub">我们设计了四个不可复制的时刻，让这场赛事成为年度集会，而非一次性比赛。</div>
+    </div>
+
+    <div class="moments reveal">
+      <div class="moment">
+        <div class="top"><div class="planet moon"></div><div class="num">[ M.01 ]</div></div>
+        <div class="ttl">开幕<span class="o"> · </span>月球时刻</div>
+        <div class="desc">全场灯暗，主屏播放 90 秒短片。从地球升空、穿越月球、落点于机器人手部、AI 终端、陪伴产品。收束于核心 Slogan。</div>
+      </div>
+      <div class="moment">
+        <div class="top"><div class="planet earth"></div><div class="num">[ M.02 ]</div></div>
+        <div class="ttl">路演<span class="o"> · </span>Frontier 时刻</div>
+        <div class="desc">Top 12 队伍上场前，每队播放 30 秒前采短片。学习达沃斯路演的舞台调度——黑场、聚光、登台。</div>
+      </div>
+      <div class="moment">
+        <div class="top">
+          <div class="planet-with-rings" style="width:44px;height:44px;position:relative;">
+            <div class="ring back"></div>
+            <div class="planet saturn" style="width:100%;height:100%"></div>
+            <div class="ring front"></div>
+          </div>
+          <div class="num">[ M.03 ]</div>
+        </div>
+        <div class="ttl">颁奖<span class="o"> · </span>Term Sheet 时刻</div>
+        <div class="desc">资本青睐奖现场颁发：高山新域代表上台、现场签约、合影。这是这场赛事真正的护城河——不是奖金，是入场券。</div>
+      </div>
+      <div class="moment">
+        <div class="top">
+          <div style="display:flex;gap:4px;align-items:center">
+            <div class="planet mercury" style="width:12px;height:12px"></div>
+            <div class="planet venus" style="width:14px;height:14px"></div>
+            <div class="planet earth" style="width:16px;height:16px"></div>
+            <div class="planet mars" style="width:14px;height:14px"></div>
+          </div>
+          <div class="num">[ M.04 ]</div>
+        </div>
+        <div class="ttl">缔结<span class="o"> · </span>After Party</div>
+        <div class="desc">不是娱乐化派对，是缔结仪式。生态墙打卡 + 现场签约 + 联盟圆桌 + 平台发布——把这场赛事正式升级为探月年度 IP。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════ 04 · TRACKS ══════════╗ -->
+<section class="s" id="tracks">
+  <div class="wrap">
+    <div class="s-head reveal">
+      <div class="s-num">[ 04 / TRACKS ]</div>
+      <div class="s-title">
+        <div class="s-title-cn">两条主赛道</div>
+        <div class="s-title-sub">两条赛道，一个目标——让 Physical AI 从论文走向现实。</div>
+      </div>
+    </div>
+
+    <!-- TRACK A -->
+    <div class="track reveal">
+      <div class="track-planet">
+        <div class="planet earth"></div>
+      </div>
+      <div class="track-meta">
+        <div class="track-tag">[ TRACK A · 30 支 / 占 60% ]</div>
+        <div class="track-h">主赛道 A · 让 AI 走出屏幕<span class="en">PHYSICAL AI</span></div>
+        <div class="track-sub">让 AI 走出屏幕，进入物理世界。具身智能 / AI 硬件 / 陪伴机器人 / AI 可穿戴 / 智能家居 — 所有 Physical AI 的子方向。</div>
+        <div class="track-stats">
+          <div>
+            <div class="v"><span class="o">30</span></div>
+            <div class="l">队伍上限</div>
+          </div>
+          <div>
+            <div class="v">21<span class="o">天</span></div>
+            <div class="l">线上 Bootcamp</div>
+          </div>
+          <div>
+            <div class="v">4<span class="o">级</span></div>
+            <div class="l">技术难度分级</div>
+          </div>
+          <div>
+            <div class="v"><span class="o">∞</span></div>
+            <div class="l">硬件套件池</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sub-direction grid -->
+    <div class="subdir-grid reveal">
+      <div class="subdir">
+        <div class="top"><div class="planet mars"></div><div class="pid">[ A.01 / MARS ]</div></div>
+        <div class="name">具身智能<span class="en">EMBODIED</span></div>
+        <div class="tags">机械臂操作 · 人形机器人 · 模仿学习 · VLA · 世界模型</div>
+      </div>
+      <div class="subdir">
+        <div class="top"><div class="planet jupiter"></div><div class="pid">[ A.02 / JUPITER ]</div></div>
+        <div class="name">AI 硬件<span class="en">HARDWARE</span></div>
+        <div class="tags">AI Pin · Rabbit R1 类终端 · AI 眼镜 · 智能音箱新形态</div>
+      </div>
+      <div class="subdir">
+        <div class="top"><div class="planet venus"></div><div class="pid">[ A.03 / VENUS ]</div></div>
+        <div class="name">陪伴机器人<span class="en">COMPANION</span></div>
+        <div class="tags">桌面陪伴 · AI 玩具 · 情绪交互 · Loona / Cozmo / Vector 类</div>
+      </div>
+      <div class="subdir">
+        <div class="top"><div class="planet uranus"></div><div class="pid">[ A.04 / IOT ]</div></div>
+        <div class="name">可穿戴 · IoT<span class="en">WEARABLE</span></div>
+        <div class="tags">健康监测 · 鸿蒙生态 · Matter 生态 · 多模态家居中枢</div>
+      </div>
+    </div>
+
+    <!-- Difficulty -->
+    <div class="diff-table reveal">
+      <div class="diff-row head">
+        <div class="lvl">DIFFICULTY</div>
+        <div class="desc">技术路线</div>
+        <div class="w">评审权重</div>
+      </div>
+      <div class="diff-row">
+        <div class="lvl">L1</div>
+        <div class="desc">目标检测 + 时间序列 / 简单交互硬件</div>
+        <div class="w">× 0.3</div>
+      </div>
+      <div class="diff-row">
+        <div class="lvl">L2</div>
+        <div class="desc">目标检测 + Agent / 多模态硬件</div>
+        <div class="w">× 0.5</div>
+      </div>
+      <div class="diff-row">
+        <div class="lvl">L3</div>
+        <div class="desc">模仿学习 / 端云协同</div>
+        <div class="w">× 0.8</div>
+      </div>
+      <div class="diff-row">
+        <div class="lvl">L4</div>
+        <div class="desc">VLA / 世界模型驱动的硬件产品</div>
+        <div class="w">× 1.0</div>
+      </div>
+    </div>
+
+    <!-- TRACK B -->
+    <div class="track reveal" style="margin-top: 64px">
+      <div class="track-planet">
+        <div class="planet mercury"></div>
+      </div>
+      <div class="track-meta">
+        <div class="track-tag">[ TRACK B · 20 支 / 占 40% ]</div>
+        <div class="track-h">主赛道 B · 软件的极致<span class="en">AI AGENT</span></div>
+        <div class="track-sub">软件的极致，也是边界。纯软件赛道，门槛低，扩大全栈开发者参与池；鼓励"软件 × 硬件"跨界——用 LLM Agent 控制硬件设备。</div>
+        <div class="track-stats">
+          <div><div class="v"><span class="o">20</span></div><div class="l">队伍上限</div></div>
+          <div><div class="v">通用<span class="o">·</span>多模态</div><div class="l">智能体方向</div></div>
+          <div><div class="v">行业<span class="o">·</span>工具</div><div class="l">应用方向</div></div>
+          <div><div class="v">软<span class="o">×</span>硬</div><div class="l">跨界鼓励</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════ 05 · WHY MOONBOT ══════════╗ -->
+<section class="s" id="why">
+  <div class="wrap">
+    <div class="s-head reveal">
+      <div class="s-num">[ 05 / MOONBOT ]</div>
+      <div class="s-title">
+        <div class="s-title-cn">为什么探月能办好</div>
+        <div class="s-title-sub">我们不是从零策划一场陌生赛事，<br/>而是把已经存在的探月生态，第一次集中放到一个屋檐下 48 小时。</div>
+      </div>
+    </div>
+
+    <div class="why-grid reveal">
+      <div class="why-cell"><div class="n">10,000<span class="o">+</span></div><div class="l">精英会员</div></div>
+      <div class="why-cell"><div class="n">300<span class="o">+</span></div><div class="l">具身博士小天才</div></div>
+      <div class="why-cell"><div class="n">20<span class="o">+</span></div><div class="l">深度技术社群</div></div>
+      <div class="why-cell"><div class="n">1<span class="o"> 年+</span></div><div class="l">公益运营</div></div>
+      <div class="why-cell"><div class="n">500<span class="o"> 万+</span></div><div class="l">媒体传播</div></div>
+    </div>
+
+    <div class="why-prose reveal">
+      <p>探月以"具身智能"起家，但社区中早已有大量 <strong>AI 硬件、陪伴机器人、AI 可穿戴</strong>方向的开发者活跃。</p>
+      <p>我们生于清华，连接 <strong>清北、北邮、北航、上交</strong> 与 <strong>Stanford、Berkeley、CMU、MIT</strong> 的顶尖人才。50+ 次线下活动，10 万+ 参与人次。</p>
+      <p class="end">这件事，除了探月，没有别人能做。</p>
+    </div>
+
+    <div class="team-grid reveal">
+      <div class="person">
+        <div class="id">[ 01 / FOUNDER ]</div>
+        <div class="nm">王明玥</div>
+        <div class="role">CEO · 创始人</div>
+        <div class="bio">清华经管硕士 / 清华具身智能俱乐部创始主席 / 清华未来机器人首席战略顾问 / 小米前战略负责人，16+ 年产业经验。</div>
+      </div>
+      <div class="person">
+        <div class="id">[ 02 / CO-FOUNDER ]</div>
+        <div class="nm">高敏</div>
+        <div class="role">联创 · 平台负责人</div>
+        <div class="bio">清华经管硕士 / 华为、字节产品经理。负责探月平台搭建与社区运营。</div>
+      </div>
+      <div class="person">
+        <div class="id">[ 03 / CO-FOUNDER ]</div>
+        <div class="nm">刘思彤</div>
+        <div class="role">联创 · 产业负责人</div>
+        <div class="bio">清华经管硕士 / 制造业产业实践背景。统筹产业方与赞助方对接。</div>
+      </div>
+      <div class="person">
+        <div class="id">[ 04 / CTO ]</div>
+        <div class="nm">庄子文</div>
+        <div class="role">技术合伙人</div>
+        <div class="bio">清华叉院具身智能博士 / 顶会顶刊作者。负责赛道难度评估与技术评审统筹。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════ 06 · JUDGES ══════════╗ -->
+<section class="s" id="judges">
+  <div class="wrap">
+    <div class="s-head reveal">
+      <div class="s-num">[ 06 / JUDGES ]</div>
+      <div class="s-title">
+        <div class="s-title-cn">拟邀的评委</div>
+        <div class="s-title-sub">学术 + 产业 + 资本，三个天花板共聚北京。<br/><span style="color:var(--orange);font-weight:600">✓</span> 表示已确认。</div>
+      </div>
+    </div>
+
+    <div class="judges reveal">
+      <!-- ACADEMIC -->
+      <div class="judge-col">
+        <div class="top">
+          <div class="planet mars"></div>
+          <div class="titles">
+            <div class="h">学术评委</div>
+            <div class="c">ACADEMIA · 拟邀 5–6 人</div>
+          </div>
+        </div>
+        <div class="judge-list">
+          <div class="judge-item"><div class="check">✓</div><div><div class="nm">赵明国</div><div class="desc">清华自动化系 · 人形机器人 / 控制</div></div></div>
+          <div class="judge-item"><div class="check">✓</div><div><div class="nm">郝秀清</div><div class="desc">清华 x-lab · 创业孵化</div></div></div>
+          <div class="judge-item"><div class="check">✓</div><div><div class="nm">方斌</div><div class="desc">北邮 · 具身 / 机器人</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">张涛</div><div class="desc">清华具身研究院 · 邀请中</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">王启宁</div><div class="desc">北大 · 邀请中</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">王田苗</div><div class="desc">北航 · 初步意愿</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">李泽湘</div><div class="desc">港科大 / 松山湖体系</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">许华哲</div><div class="desc">清华叉院 · 强意愿</div></div></div>
+        </div>
+      </div>
+
+      <!-- INDUSTRY -->
+      <div class="judge-col">
+        <div class="top">
+          <div class="planet earth"></div>
+          <div class="titles">
+            <div class="h">产业评委</div>
+            <div class="c">INDUSTRY · 拟邀 6–8 人</div>
+          </div>
+        </div>
+        <div class="judge-list">
+          <div class="judge-item"><div class="check">✓</div><div><div class="nm">王鹤</div><div class="desc">银河通用 · 大脑头部</div></div></div>
+          <div class="judge-item"><div class="check">✓</div><div><div class="nm">周永</div><div class="desc">灵心巧手 · 灵巧手头部</div></div></div>
+          <div class="judge-item"><div class="check">✓</div><div><div class="nm">秦深涛</div><div class="desc">OriginFlow · 具身数据 / 00 后</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">王兴兴</div><div class="desc">宇树 · 本体头部</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">程昊</div><div class="desc">加速进化 · 本体明星</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">胡宇航</div><div class="desc">首形科技 · 邀请中</div></div></div>
+        </div>
+        <div class="judge-subhead">AI 硬件 / 陪伴方向</div>
+        <div class="judge-list">
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">小米硬件部</div><div class="desc">AI 硬件 / 智能终端</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">字节 Pico 团队</div><div class="desc">XR / AI 终端</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">追觅 / 科沃斯</div><div class="desc">家庭智能交互负责人</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">徐立</div><div class="desc">商汤 · 头部产业资本</div></div></div>
+        </div>
+      </div>
+
+      <!-- CAPITAL -->
+      <div class="judge-col">
+        <div class="top">
+          <div class="planet-with-rings" style="width:40px;height:40px;position:relative;flex-shrink:0">
+            <div class="ring back"></div>
+            <div class="planet saturn" style="width:100%;height:100%"></div>
+            <div class="ring front"></div>
+          </div>
+          <div class="titles">
+            <div class="h">资本评委</div>
+            <div class="c">CAPITAL · 拟邀 4–5 人</div>
+          </div>
+        </div>
+        <div class="judge-list">
+          <div class="judge-item"><div class="check">✓</div><div><div class="nm">李竹</div><div class="desc">水木基金 · 清华系硬科技</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">沈南鹏 / 周逵</div><div class="desc">红杉中国 · 头部综合 VC</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">陈维广</div><div class="desc">蓝驰创投 · 头部综合 VC</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">邝子平</div><div class="desc">启明创投 · 头部综合 VC</div></div></div>
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">张磊</div><div class="desc">高瓴资本 · 头部综合 VC</div></div></div>
+        </div>
+        <div class="judge-subhead">战略资助方</div>
+        <div class="judge-list">
+          <div class="judge-item pending"><div class="check">·</div><div><div class="nm">硬科技专项基金</div><div class="desc">中科创星 / 启迪之星 / 联想之星</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="judge-foot reveal">
+      <div class="lab">媒体 / 社区评委 · 拟邀 3 人</div>
+      <div class="ppl">
+        弗兰异类·弗兰克<span class="check">✓</span>
+        <span class="sep">·</span>
+        张振尧<span class="check">✓</span>
+        <span class="sep">·</span>
+        WhynotTV 何泰然
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════ 07 · TEAMS ══════════╗ -->
+<section class="s" id="teams">
+  <div class="wrap">
+    <div class="s-head reveal">
+      <div class="s-num">[ 07 / TEAMS ]</div>
+      <div class="s-title">
+        <div class="s-title-cn">拟邀的队伍</div>
+        <div class="s-title-sub">50 支队伍，每一支都有名有姓。<br/>70% 定向邀请 + 30% 千里挑一海选。</div>
+      </div>
+    </div>
+
+    <div class="profile-strip reveal">
+      <div class="profile">
+        <div class="idx">[ P.01 ]</div>
+        23 岁上下的开发者
+      </div>
+      <div class="profile">
+        <div class="idx">[ P.02 ]</div>
+        顶尖高校在校生 / 应届博士
+      </div>
+      <div class="profile">
+        <div class="idx">[ P.03 ]</div>
+        连续黑客松获奖者
+      </div>
+      <div class="profile">
+        <div class="idx">[ P.04 ]</div>
+        具身 / AI 硬件 / 陪伴机器人开源核心贡献者
+      </div>
+      <div class="profile">
+        <div class="idx">[ P.05 ]</div>
+        已经在做事的 00 后创业者
+      </div>
+    </div>
+
+    <!-- CAT 1 -->
+    <div class="team-cat reveal">
+      <div class="team-cat-head">
+        <div class="num">01</div>
+        <div class="ttl">小红书黑客松获奖明星团队</div>
+        <div class="meta">拟邀 <span class="o">8 支</span> · 张振尧负责打通</div>
+      </div>
+      <div class="team-cat-body">
+        <div class="team-row confirmed">
+          <div class="nm">MVP / TRI.ME 吹了么</div>
+          <div class="who">张振尧 / 张子豪 / 殷孟浩 / 刘宓 / 代福莹</div>
+          <div class="desc">小红书黑客松硬件赛道三等奖</div>
+          <div class="st">已确认 ✓</div>
+        </div>
+        <div class="team-row">
+          <div class="nm">DAIZY</div>
+          <div class="who">叶博文 / 刘孟乔 / 陈容贤 / 高雪丹</div>
+          <div class="desc">全场大奖（Pocket Guitar）</div>
+          <div class="st">邀请中</div>
+        </div>
+        <div class="team-row">
+          <div class="nm">香菇肥牛</div>
+          <div class="who">王宁 / Mira</div>
+          <div class="desc">硬件赛道一等奖（脑控轮椅）</div>
+          <div class="st">邀请中</div>
+        </div>
+        <div class="team-row">
+          <div class="nm">noonwake.ai</div>
+          <div class="who">吴尚 / 蒲森林 / 唐美捷</div>
+          <div class="desc">硬件赛道二等奖（好运日历机）</div>
+          <div class="st">邀请中</div>
+        </div>
+        <div class="team-row">
+          <div class="nm">当理发遇到 Token 上限</div>
+          <div class="who">余亮 / 洪沐天 / 贺泽邦 / 林诗逸</div>
+          <div class="desc">软件赛道一等奖（Chic Chic）</div>
+          <div class="st">邀请中</div>
+        </div>
+        <div class="team-row">
+          <div class="nm">Page One · 薯医 NoteRx · Vibethon</div>
+          <div class="who">内容创作 / AI 原住民 / 黑客松组织者</div>
+          <div class="desc">小红书黑客松多元明星团队</div>
+          <div class="st">邀请中</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAT 2 -->
+    <div class="team-cat reveal">
+      <div class="team-cat-head">
+        <div class="num">02</div>
+        <div class="ttl">高校顶尖团队</div>
+        <div class="meta">拟邀 <span class="o">12 支</span> · 通过教授推荐</div>
+      </div>
+      <div class="team-cat-prose">
+        <strong>清华</strong> · 叉院 / 自动化 / 计算机 / 航院 / 美院 HCI &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>北大</strong> · 智能学院 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>北航</strong> · 机器人研究所 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>北邮</strong> · 自动化 / 智能科学<br/>
+        <strong>上交</strong> · 机械与动力 / 设计学院 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>中科大</strong> · 信息学院 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>海外回流博士</strong> · Stanford / CMU / Berkeley / MIT
+      </div>
+    </div>
+
+    <!-- CAT 3 -->
+    <div class="team-cat reveal">
+      <div class="team-cat-head">
+        <div class="num">03</div>
+        <div class="ttl">大厂 AI / 机器人 / 硬件核心团队</div>
+        <div class="meta">拟邀 <span class="o">10 支</span> · 个人身份参赛</div>
+      </div>
+      <div class="team-cat-prose">
+        <strong>字节</strong> · Seed Robotics / Pico 团队 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>小米</strong> · Cyberone / AI 硬件部 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>华为</strong> · 诺亚方舟 / 鸿蒙智能终端<br/>
+        <strong>商汤</strong> · 通用具身大模型 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>追觅 / 科沃斯</strong> · 家庭机器人智能交互 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>OPPO / Vivo</strong> · AI 终端 / AI 眼镜
+      </div>
+    </div>
+
+    <!-- CAT 4 -->
+    <div class="team-cat reveal">
+      <div class="team-cat-head">
+        <div class="num">04</div>
+        <div class="ttl">AI 硬件 / 陪伴机器人 / AI Pin 创业团队</div>
+        <div class="meta">拟邀 <span class="o">8 支</span> · 新增方向</div>
+      </div>
+      <div class="team-cat-prose">
+        <strong>AI 硬件创业代表</strong> · 朱潇木 Notebook / 类 AI Pin 中文创业者 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>陪伴机器人创业</strong> · 桌面陪伴 / AI 玩具<br/>
+        <strong>AI 可穿戴创业</strong> · 眼镜 / 健康监测 / 情绪感知 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>鸿蒙生态创业</strong> · AI 应用 / 智能家居中枢
+      </div>
+    </div>
+
+    <!-- CAT 5 -->
+    <div class="team-cat reveal">
+      <div class="team-cat-head">
+        <div class="num">05</div>
+        <div class="ttl">开源项目核心贡献者</div>
+        <div class="meta">拟邀 <span class="o">8 支</span> · 学术评委推荐</div>
+      </div>
+      <div class="team-cat-prose">
+        <strong>LeRobot</strong> 中文社区核心 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>GR00T</strong> 中文贡献者 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>Pi0 / ACT / Diffusion Policy</strong> 核心维护者<br/>
+        <strong>OpenMMLab</strong> 机器人方向贡献者 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>AI Agent</strong> 开源项目核心
+      </div>
+    </div>
+
+    <div class="teams-foot reveal">
+      此外还有 <strong>9 支</strong> 来自探月社区核心创业团队的拟邀名额。<strong>30% 公开海选</strong> 50 个名额面向探月生态、Hugging Face 中文社区、特定开源社区开放。
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════ 08 · COOPERATION ══════════╗ -->
+<section class="s" id="partners">
+  <div class="wrap">
+    <div class="s-head reveal">
+      <div class="s-num">[ 08 / PARTNERSHIP ]</div>
+      <div class="s-title">
+        <div class="s-title-cn">我们需要什么样的合作</div>
+        <div class="s-title-sub">我们不卖广告位，<br/>而是邀请你成为这场年度集会的合伙人。</div>
+      </div>
+    </div>
+
+    <div class="coop-pillars reveal">
+      <div class="pillar">
+        <div class="from">PILLAR 01</div>
+        <div class="name">品牌张力</div>
+        <div class="arr">→</div>
+        <div class="to">联合主办</div>
+      </div>
+      <div class="pillar">
+        <div class="from">PILLAR 02</div>
+        <div class="name">硬核技术</div>
+        <div class="arr">→</div>
+        <div class="to">技术 / 算力支持</div>
+      </div>
+      <div class="pillar">
+        <div class="from">PILLAR 03</div>
+        <div class="name">产业落地</div>
+        <div class="arr">→</div>
+        <div class="to">产业评委 / 联合宣发</div>
+      </div>
+      <div class="pillar">
+        <div class="from">PILLAR 04</div>
+        <div class="name">资本背书</div>
+        <div class="arr">→</div>
+        <div class="to">战略资助 / 投资合作</div>
+      </div>
+      <div class="pillar">
+        <div class="from">PILLAR 05</div>
+        <div class="name">政府背书</div>
+        <div class="arr">→</div>
+        <div class="to">指导单位 / 场地合作</div>
+      </div>
+    </div>
+
+    <!-- Confirmed -->
+    <div class="reveal">
+      <div class="partners-section-head">
+        <h3>已确认合作伙伴</h3>
+        <div class="ln"></div>
+        <div class="ct">CONFIRMED · 4</div>
+      </div>
+    </div>
+    <div class="partners reveal">
+      <div class="partner confirmed">
+        <div class="stat">[ ✓ 已确认 · 联合主办 ]</div>
+        <div class="nm">弗兰异类 · 弗兰克</div>
+        <div class="role">CO-HOST · 媒体破圈</div>
+        <div class="desc">科技领域大 V / 媒体破圈引擎</div>
+      </div>
+      <div class="partner confirmed">
+        <div class="stat">[ ✓ 已确认 · 联合主办 ]</div>
+        <div class="nm">张振尧</div>
+        <div class="role">CO-HOST · 选手代表</div>
+        <div class="desc">00 后开发者代表 / 顶级选手定向邀请</div>
+      </div>
+      <div class="partner confirmed">
+        <div class="stat">[ ✓ 已确认 · 联合主办 ]</div>
+        <div class="nm">高山新域</div>
+        <div class="role">CO-HOST · 资本招商</div>
+        <div class="desc">资本招商 / Term Sheet 时刻冠名</div>
+      </div>
+      <div class="partner confirmed">
+        <div class="stat">[ ✓ 已确认 · 顶级技术 ]</div>
+        <div class="nm">高擎机电</div>
+        <div class="role">TECH PREMIER</div>
+        <div class="desc">力控关节 / 控制 SDK / 机械臂硬件</div>
+      </div>
+    </div>
+
+    <!-- In Progress -->
+    <div class="reveal">
+      <div class="partners-section-head">
+        <h3>进行中合作</h3>
+        <div class="ln"></div>
+        <div class="ct">IN PROGRESS · 2</div>
+      </div>
+    </div>
+    <div class="partners reveal" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 80px;">
+      <div class="partner pending">
+        <div class="stat">[ · 邀请中 · 顶级技术支持 ]</div>
+        <div class="nm">NVIDIA</div>
+        <div class="role">EDGE COMPUTE / ISAAC</div>
+        <div class="desc">Jetson 边缘算力 / Isaac 框架 / 现场技术导师</div>
+      </div>
+      <div class="partner pending">
+        <div class="stat">[ · 邀请中 · 顶级技术支持 ]</div>
+        <div class="nm">Google</div>
+        <div class="role">TPU / DEEPMIND</div>
+        <div class="desc">TPU 算力 / DeepMind 技术导师 / 模型支持</div>
+      </div>
+    </div>
+
+    <!-- Tier cards -->
+    <div class="reveal">
+      <div class="partners-section-head">
+        <h3>四档合作席位</h3>
+        <div class="ln"></div>
+        <div class="ct">TIER · 1 → 4</div>
+      </div>
+    </div>
+    <div class="tier-cards reveal">
+      <div class="tier">
+        <div class="num">[ TIER 01 / CO-HOST ]</div>
+        <div class="nm">战略联合主办</div>
+        <div class="price">¥ 30 万<span class="small">限 3 席</span></div>
+        <ul>
+          <li>副标位 + 现场评委席</li>
+          <li>路演 5 分钟独享时段</li>
+          <li>后续生态优先合作权</li>
+          <li>探月年度 IP 共同署名</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <div class="num">[ TIER 02 / TECH ]</div>
+        <div class="nm">顶级技术支持</div>
+        <div class="price">¥ 20–25 万<span class="small">限 4–5 席</span></div>
+        <ul>
+          <li>现场技术展位</li>
+          <li>选手指定使用 SDK</li>
+          <li>联合 PR + 评委席</li>
+          <li>探月直投视野技术验证</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <div class="num">[ TIER 03 / CAPITAL ]</div>
+        <div class="nm">战略资助方</div>
+        <div class="price">¥ 50 万+<span class="small">限 2 席</span></div>
+        <ul>
+          <li>命名权重要奖项</li>
+          <li>资本评委席</li>
+          <li>现场 Term Sheet 时刻</li>
+          <li>整年探月生态优先看到权</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <div class="num">[ TIER 04 / MEDIA ]</div>
+        <div class="nm">平台 / 媒体合作</div>
+        <div class="price">资源置换<span class="small">不限席位</span></div>
+        <ul>
+          <li>直播分发 / 流量倾斜</li>
+          <li>内容协同 / 联合 PR</li>
+          <li>B 站 / 抖音 / 视频号</li>
+          <li>36 氪 / 量子位 / 机器之心</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Conversion -->
+    <div class="conversion reveal">
+      <div>
+        <h3>成为这场年度集会的<span class="o">合伙人</span></h3>
+        <div class="info">
+          联系：<span>partner@moonbot.space</span> &nbsp;·&nbsp; 王明玥 微信对接
+        </div>
+      </div>
+      <div class="cta-stack">
+        <a class="btn primary" href="mailto:partner@moonbot.space"><span>申请战略合作</span><span class="arr"></span></a>
+        <a class="btn secondary" href="#hero"><span>下载招募白皮书</span><span class="arr"></span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════ 09 · ABOUT ══════════╗ -->
+<section class="s" id="about">
+  <div class="wrap">
+    <div class="s-head reveal">
+      <div class="s-num">[ 09 / ABOUT ]</div>
+      <div class="s-title">
+        <div class="s-title-cn">关于探月</div>
+        <div class="s-title-sub">中国 Physical AI 领域人才与项目密度最高的精英社区。</div>
+      </div>
+    </div>
+
+    <div class="about-intro reveal">
+      探月具身智能社区——做"<span class="o">Physical AI 领域的 Y Combinator</span>"。
+    </div>
+
+    <div class="about-grid reveal">
+      <div class="about-cell">
+        <div class="lab">[ WHAT · 我们做什么 ]</div>
+        <div class="h">连接学术 / 开发者 / 产业 / 资本</div>
+        <div class="d">打通中国 Physical AI 的完整生态闭环。从博士论文到产业落地，从天使轮到 Pre-IPO，所有这条赛道上的关键节点都在这里被连起来。</div>
+      </div>
+      <div class="about-cell">
+        <div class="lab">[ HOW · 我们怎么做 ]</div>
+        <div class="h">深度运营 1 年+ / 50+ 次线下活动</div>
+        <div class="d">20+ 个技术社群 / 10 万+ 参与人次 / 连接清北 + 海外名校 / 300+ 具身博士小天才。每一个名字都查得到，每一次连接都可被复用。</div>
+      </div>
+      <div class="about-cell">
+        <div class="lab">[ WHERE · 我们要去哪 ]</div>
+        <div class="h">推动中国乃至全球 Physical AI 产业发展</div>
+        <div class="d">让 AI 走出屏幕，进入物理世界。让最硬核的研究在最短时间内变成产品。让中国 Physical AI 的赛道有自己的标杆。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════ 10 · CLOSING ══════════╗ -->
+<section class="closing">
+  <div class="wrap">
+    <div class="closing-mark reveal"></div>
+    <div class="closing-brand reveal">— 探月具身智能社区 —</div>
+    <div class="closing-slogan reveal">
+      不为抵达，<br/>
+      <span class="end">只为看清那条还没画出的线。</span>
+    </div>
+
+    <div class="planet-strip reveal">
+      <div class="planet mercury" style="width:14px;height:14px"></div>
+      <div class="planet venus"   style="width:18px;height:18px"></div>
+      <div class="planet earth"   style="width:22px;height:22px"></div>
+      <div class="planet mars"    style="width:18px;height:18px"></div>
+      <div class="planet jupiter" style="width:36px;height:36px"></div>
+      <div class="planet-with-rings" style="width:38px;height:18px;position:relative">
+        <div class="ring back"></div>
+        <div class="planet saturn" style="width:18px;height:18px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)"></div>
+        <div class="ring front"></div>
+      </div>
+      <div class="planet uranus"  style="width:16px;height:16px"></div>
+      <div class="planet neptune" style="width:14px;height:14px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div>
+      <div class="brand">
+        <img class="logo" src="assets/moonbot-logo-en.svg" alt="MOONBOT SPACE"/>
+        <span class="logo-cn">探月具身智能社区</span>
+      </div>
+      <div class="blurb">
+        MOONBOT FRONTIER · The Physical AI Hackathon ·
+        2026 年 7 月 4–6 日 · 北京海淀。
+      </div>
+    </div>
+    <div class="col">
+      <h4>赛事</h4>
+      <ul>
+        <li>什么是 Frontier</li>
+        <li>赛事概览</li>
+        <li>两条主赛道</li>
+        <li>评委矩阵</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>合作</h4>
+      <ul>
+        <li>战略联合主办</li>
+        <li>顶级技术支持</li>
+        <li>战略资助方</li>
+        <li>媒体合作</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>联系</h4>
+      <ul>
+        <li>partner@moonbot.space</li>
+        <li>申请加入 · 王明玥</li>
+        <li>媒体咨询 · 高敏</li>
+        <li>产业对接 · 刘思彤</li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap baseline">
+    <div>© 2026 MOONBOT FRONTIER · 探月具身智能社区</div>
+    <div>BORN AT TSINGHUA · BUILT FOR THE FRONTIER</div>
+  </div>
+</footer>
+
+<script>
+  // CURSOR
+  (function () {
+    const dot  = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+    let rx = mx, ry = my;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+    });
+    function tick () {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+      requestAnimationFrame(tick);
+    }
+    tick();
+    document.querySelectorAll('a, button, .moment, .subdir, .why-cell, .person, .judge-item, .partner, .tier, .team-row, .pillar')
+      .forEach(el => {
+        el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+        el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+      });
+  })();
+
+  // SCROLL REVEAL
+  (function () {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  })();
+</script>
+</body>
+</html>
